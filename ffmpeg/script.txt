@@ -1,0 +1,50 @@
+preparation 
+- launch VS, break at the beginning of submit()
+  > collapse job submission region
+  > collapse tracking progress region
+  > adjust font
+- using demo UI, delete workitems
+- launch batch explorer, connect to demo account
+  > switch to pool view to make sure everything is loaded
+  > switch to job view
+- launch monitor portal, make sure pool is in stable state
+- launch cloud berry, show input on left hand, delete everything in output, show top level ocntainers
+
+presentation
+- talk through deck until showing the demo slide
+- switch to visual studio - press F5
+- talk about configure dialog
+- talk about container selection
+- talk about other buttons
+- click on submit button
+- step through the code line by line
+  > credential and account
+  > client with public azure batch url
+  > list blobs in input container
+  > create a task for each blob
+  > create the command line
+  > add resource file
+  > add task
+- before submit, switch to batch explorer and show the job list
+  > show cloudberry output container is empty
+  > step through submit
+  > switch to batch explorer and press f5
+  > select the job and view tasks
+- switch to portal UI and show the heatmap
+- switch back to cloudberry and show contents (view some video)
+- switch back to visual studio and continue
+  > GetJob()
+  > list tasks in the job
+  > loop through the tasks until there is no running and active tasks
+  > terminate workitem
+  > press F5
+- switch back to portal and look at the heatmap
+- switch to batch explorer and show tasks status
+  > view task output file
+- switch back to VS and show code (not step through)
+  > show Delete WI
+  > focus on the filterClause when listing woritems
+- show pool creation code 
+  > show list pool with filterclause
+  > show resource file
+  > show CreatePool() and commit()
