@@ -26,6 +26,9 @@
     "imageUri": {
       "value": "[[imageUri]]"
     },
+    "scriptUri": {
+      "value": "[[scriptUri]]"
+    },
     "vhdContainer": {
       "value": "[[vhdContainer]]"
     }

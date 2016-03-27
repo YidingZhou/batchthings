@@ -3,110 +3,97 @@
 # Global configuration
 $script:GITHUB_BASE_URL = "https://raw.githubusercontent.com/YidingZhou/batchthings/mdcs/matlab-cluster/"
 
-function Select-TextItem($options)
-{
-    [int]$optionPrefix = 1
-    # Create menu list
-    foreach ($option in $options)
-    {
-        Write-Host ("{0,3}: {2} - {1}" -f $optionPrefix,$option.SubscriptionName, $option.SubscriptionId)
-        $optionPrefix++
+function PrepAzureContext() {
+  echo "Validating Azure logon..."
+  while($true) {
+    $script:current_subscriptions = (Get-AzureRmSubscription) # cached for create use, if necessary
+    if(-not $?) {
+      echo "No active login account, log in now..."
+      Login-AzureRmAccount
+    } else {
+      break
     }
-    Write-Host ("{0,3}: {1}" -f 0,"To cancel")
-    [int]$response = Read-Host "Enter Selection"
-    $val = $null
-    if ($response -gt 0 -and $response -le $options.Count)
-    {
-        $val = $options[$response-1]
+  }
+}
+
+
+function mdcs_create($p) {
+  function readstring($info, $default) {
+    $response = Read-Host -Prompt "$info [$default]"
+    if(-not $response) {
+      $response = $default
     }
-    return $val
-}
-
-function prep() {
-  echo "Fetching subscription information..."
-  $subs = Get-AzureRmSubscription | % {$_.SubscriptionId}
-  if(-not $?) {
-    echo "No active login account, logging in now..."
-    Login-AzureRmAccount
-    echo "Fetching subscription information..."
-    $subs = Get-AzureRmSubscription | % {$_.SubscriptionId}
-  }
-  echo "Choose the subscription to deploy"
-
-  if($subs -contains $script:config["SubscriptionId"]) {
-    Set-AzureRmContext -SubscriptionId $script:config["SubscriptionId"]
-  } else {
-    echo "Configured subscription is not found in the subscription list of current account, exiting"
-    exit
-  }
-}
-
-function readstring($info, $default) {
-  $response = Read-Host -Prompt "$info [$default]"
-  if(-not $response) {
-    $response = $default
-  }
-  return $response
-}
-
-function parse_init($p) {
-  $script:inifile_entries = @("ClusterName", "NumberWorkers", "ClientVmSize", "MJSVmSize", "WorkerVmSize", "VmUsername", "SubscriptionId", "Region", "BaseVmVhd", "ClusterVmVhdContainer", "SubscriptionId")
-
-  # load static default config
-  $script:config = @{}
-  foreach ($entry in $inifile_entries) {
-    $script:config[$entry] = ""
+    return $response
   }
 
-  # parse args
-  if($p.Count -gt 0) {
-    $script:config["inifile"] = $p[0]
-  } else {
-    $script:config["inifile"] = "mdcsconf.ini"
-  }
+  function parse_init($p) {
+    $script:inifile_entries = @("ClusterName", "NumberWorkers", "ClientVmSize", "MJSVmSize", "WorkerVmSize", "VmUsername", "SubscriptionId", "Region", "BaseVmVhd", "ClusterVmVhdContainer", "SubscriptionId")
 
-  # load config from ini file
-  if(Test-Path $script:config["inifile"]) {
-    $iniContent = Get-IniContent $script:config["inifile"]
-    if($iniContent.ContainsKey("config")) {
-      foreach ($entry in $inifile_entries) {
-        if($iniContent["config"].ContainsKey($entry)) {
-          $script:config[$entry] = $iniContent["config"][$entry]
+    # load static default config
+    $script:config = @{}
+    foreach ($entry in $inifile_entries) {
+      $script:config[$entry] = ""
+    }
+
+    # parse args
+    if($p.Count -gt 0) {
+      echo "using conf file at $($p[0])"
+      $script:config["inifile"] = $p[0]
+    } else {
+      echo "using default location for mdcsconf.ini"
+      $script:config["inifile"] = "mdcsconf.ini"
+    }
+
+    # load config from ini file
+    if(Test-Path $script:config["inifile"]) {
+      echo "parsing init file"
+      $iniContent = Get-IniContent $script:config["inifile"]
+      if($iniContent.ContainsKey("config")) {
+        foreach ($entry in $inifile_entries) {
+          if($iniContent["config"].ContainsKey($entry)) {
+            $script:config[$entry] = $iniContent["config"][$entry]
+          }
         }
       }
     }
   }
-}
 
-function Get-IniContent ($filePath)
-{
-    $ini = @{}
-    switch -regex -file $FilePath
-    {
-        "^\[(.+)\]" # Section
-        {
-            $section = $matches[1]
-            $ini[$section] = @{}
-            $CommentCount = 0
-        }
-        "^(;.*)$" # Comment
-        {
-            $value = $matches[1]
-            $CommentCount = $CommentCount + 1
-            $name = "Comment" + $CommentCount
-            $ini[$section][$name] = $value
-        }
-        "(.+?)\s*=(.*)" # Key
-        {
-            $name,$value = $matches[1..2]
-            $ini[$section][$name] = $value
-        }
-    }
-    return $ini
-}
+  function Get-IniContent ($filePath)
+  {
+      $ini = @{}
+      switch -regex -file $FilePath
+      {
+          "^\[(.+)\]" # Section
+          {
+              $section = $matches[1]
+              $ini[$section] = @{}
+              $CommentCount = 0
+          }
+          "^(;.*)$" # Comment
+          {
+              $value = $matches[1]
+              $CommentCount = $CommentCount + 1
+              $name = "Comment" + $CommentCount
+              $ini[$section][$name] = $value
+          }
+          "(.+?)\s*=(.*)" # Key
+          {
+              $name,$value = $matches[1..2]
+              $ini[$section][$name] = $value
+          }
+      }
+      return $ini
+  }
 
-function mdcs_create($p) {
   parse_init($p)
+
+  $subs = ($script:current_subscriptions | % {$_.SubscriptionId})
+  if($subs -contains $script:config["SubscriptionId"]) {
+    Set-AzureRmContext -SubscriptionId $script:config["SubscriptionId"]
+  } else {
+    echo "Configured subscription is not found in the subscription list of current account, exiting"
+    #exit
+  }
 
   echo "Downloading setup templates..."
   $datetimestr = (Get-Date).ToString('yyyy-MM-dd-HH-mm-ss')
@@ -149,6 +136,7 @@ function mdcs_create($p) {
     -replace '\[\[location\]\]', $location `
     -replace '\[\[dnsName\]\]', $dnsname `
     -replace '\[\[imageUri\]\]', $imageuri `
+    -replace '\[\[scriptUri\]\]', $script:GITHUB_BASE_URL `
     -replace '\[\[vhdContainer\]\]', $vhdcontainer `
     -replace '\[\[scaleNumber\]\]', $NumberWorkers `
     -replace '\[\[vmSizeClient\]\]', $ClientVmSize `
@@ -334,16 +322,20 @@ function usage($p) {
 
 function parse_param($p) {
   if($p.Count -eq 0) {
-    usage()
+    usage
     exit
   }
+  $command = $p[0]
+  if($p.length -gt 1) {
+    $command_args = $p[1..($p.length-1)]
+  }
   switch ($p[0]) {
-    "create" { prep(); mdcs_create($p[1..($p.length-1)]); break }
-    "list" { prep(); mdcs_list($p[1..($p.length-1)]); break }
-    "pause" { prep(); mdcs_pause($p[1..($p.length-1)]); break }
-    "resume" { prep(); mdcs_resume($p[1..($p.length-1)]); break }
-    "delete" { prep(); mdcs_delete($p[1..($p.length-1)]); break }
-    default { usage(); exit}
+    "create" { mdcs_create($command_args); break }
+    "list" { mdcs_list($command_args); break }
+    "pause" { mdcs_pause($command_args); break }
+    "resume" { mdcs_resume($command_args); break }
+    "delete" { mdcs_delete($command_args); break }
+    default { usage; exit}
   }
 }
 
