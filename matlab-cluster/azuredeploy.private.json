@@ -256,9 +256,6 @@
         "type": "CustomScriptExtension",
         "typeHandlerVersion": "1.2",
         "settings": {
-          "fileUris": [
-            "[variables('clientScriptName')]"
-          ],
           "commandToExecute": "[variables('clientInstallationCLI')]"
         }
       }
