@@ -256,7 +256,7 @@
         "typeHandlerVersion": "1.2",
         "settings": {
           "fileUris": [
-            "[concat(variables('templateBaseUrl'), variables('clientScriptName'))]"
+            "[variables('clientScriptName')]"
           ],
           "commandToExecute": "[variables('clientInstallationCLI')]"
         }
@@ -339,7 +339,7 @@
         "typeHandlerVersion": "1.2",
         "settings": {
           "fileUris": [
-            "[concat(variables('templateBaseUrl'), variables('scriptName'))]"
+            "[variables('scriptName')]"
           ],
           "commandToExecute": "[concat(variables('installationCLI'), ' ', parameters('dnsName'), ' ', parameters('location'), ' master')]"
         }
@@ -434,7 +434,7 @@
         "typeHandlerVersion": "1.2",
         "settings": {
           "fileUris": [
-            "[concat(variables('templateBaseUrl'), variables('scriptName'))]"
+            "[variables('scriptName')]"
           ],
           "commandToExecute": "[concat(variables('installationCLI'), ' ', parameters('dnsName'), ' ', parameters('location'))]"
         }

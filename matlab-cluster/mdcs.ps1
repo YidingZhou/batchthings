@@ -170,9 +170,9 @@ function mdcs_list($p) {
           Get-AzureRmVM -ResourceGroupName $_.ResourceGroupName | % {
             $vm = (Get-AzureRmVM -ResourceGroupName $_.ResourceGroupName -Name $_.Name -Status)
             if($vm.Name -eq 'client') {
-              $clientstate = (($vmstate.Statuses | % {$_.displaystatus}) -join ', ')
+              $clientstate = (($vm.Statuses | % {$_.displaystatus}) -join ', ')
             } elseif ($vm.Name -eq 'master') {
-              $masterstate = (($vmstate.Statuses | % {$_.displaystatus}) -join ', ')
+              $masterstate = (($vm.Statuses | % {$_.displaystatus}) -join ', ')
             } else {
               $totalworkers += 1
               $vm.Statuses | % {
@@ -194,11 +194,19 @@ function mdcs_list($p) {
     }
     return $results
   }
-  $results = (ListDeployment $p[0])
-  $results | format-table @{Expression={$_.ResourceGroupName + "/" + $_.DeploymentName}; Label="Name"}, @{Expression={$_.Client}; Label="Client"}, @{Expression={$_.Master}; Label="Master"}, @{Expression={$_.Workers}; Label="Workers"}, @{Expression={$_.WorkerStates}; Label="Worker Status"}
+  if($p -ne $null) {
+    $results = (ListDeployment $p[0])
+  } else {
+    $results = (ListDeployment($null))
+  }
+  $results | format-table @{Expression={$_.ResourceGroupName}; Label="Name"}, @{Expression={$_.Client}; Label="Client"}, @{Expression={$_.Master}; Label="Master"}, @{Expression={$_.Workers}; Label="Workers"}, @{Expression={$_.WorkerStates}; Label="Worker Status"}
 }
 
 function mdcs_pause($p) {
+  if(($p -eq $null) -or ($p.length -eq 0)) {
+    usage
+    exit
+  }
   $rg = Get-AzureRmResourceGroup -ResourceGroupName $p[0]
 
   $scriptblock = {
@@ -231,6 +239,10 @@ function mdcs_pause($p) {
 }
 
 function mdcs_resume($p) {
+  if(($p -eq $null) -or ($p.length -eq 0)) {
+    usage
+    exit
+  }
   $rg = Get-AzureRmResourceGroup -ResourceGroupName $p[0]
 
   $scriptblock = {
@@ -263,7 +275,11 @@ function mdcs_resume($p) {
 }
 
 function mdcs_delete($p) {
-  $rg = Get-AzureRmResourceGroup -ResourceGroupName $Args[0]
+  if(($p -eq $null) -or ($p.length -eq 0)) {
+    usage
+    exit
+  }
+  $rg = Get-AzureRmResourceGroup -ResourceGroupName $p[0]
 
   if($rg -eq $null) {
     echo "nothing found, exiting"
