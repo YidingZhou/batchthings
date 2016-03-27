@@ -149,6 +149,13 @@ function mdcs_create($p) {
   echo "Creating resource group"
   New-AzureRmResourceGroup -Name $rgname -Location $location
   echo "Deploying to resource group. When this step is done, you will have a running MDCS cluster"
+  echo @"
+You will be prompted to enter a password for the logon user. The supplied password must be between 8-123 characters long and must satisfy at least 3 of password complexity requirements from the following:
+1) Contains an uppercase character
+2) Contains a lowercase character
+3) Contains a numeric digit
+4) Contains a special character.
+"@
   New-AzureRmResourceGroupDeployment -ResourceGroupName $rgname -TemplateFile $template -TemplateParameterFile $updated_template_param
 }
 

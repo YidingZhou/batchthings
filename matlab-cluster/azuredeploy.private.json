@@ -106,7 +106,8 @@
     "scriptName": "[concat(parameters('scriptUri'), 'private_worker_vm_setup.ps1')]",
     "clientScriptName": "[concat(parameters('scriptUri'), 'private_client_vm_setup.ps1')]",
     "installationCLI": "[concat('powershell -ExecutionPolicy Unrestricted -file ', variables('scriptName'), ' shim')]",
-    "clientInstallationCLI": "[concat('powershell -ExecutionPolicy Unrestricted -file ', variables('clientScriptName'))]",
+    "clientInstallationCLIold": "[concat('powershell -ExecutionPolicy Unrestricted -file ', variables('clientScriptName'))]",
+    "clientInstallationCLI" : "[concat('powershell -command \"& {(New-Object System.Net.WebClient).DownloadString(''', variables('clientScriptName'), ''')}\" | powershell -ExecutionPolicy Unrestricted -command -')]",
     "networkSecurityGroupName": "NSGMJS",
     "imageUri": "[parameters('imageUri')]",
     "vhdContainer": "[parameters('vhdContainer')]"
