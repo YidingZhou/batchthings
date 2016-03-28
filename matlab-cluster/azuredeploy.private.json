@@ -105,10 +105,8 @@
     "sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
     "scriptName": "[concat(parameters('scriptUri'), 'private_worker_vm_setup.ps1')]",
     "clientScriptName": "[concat(parameters('scriptUri'), 'private_client_vm_setup.ps1')]",
-    "installationCLIold": "[concat('powershell -ExecutionPolicy Unrestricted -file ', variables('scriptName'), ' shim')]",
-    "clientInstallationCLIold": "[concat('powershell -ExecutionPolicy Unrestricted -file ', variables('clientScriptName'))]",
-    "clientInstallationCLI" : "[concat('powershell -command \"echo ', variables('clientScriptName'), '\"')]",
-    "installationCLI": "[concat('powershell -command \"echo ''echo ', variables('clientScriptName'), '''\" | powershell -command -')]",
+    "installationCLI": "powershell -ExecutionPolicy Unrestricted -file private_worker_vm_setup.ps1 shim",
+    "clientInstallationCLI": "powershell -ExecutionPolicy Unrestricted -file private_client_vm_setup.ps1",
     "networkSecurityGroupName": "NSGMJS",
     "imageUri": "[parameters('imageUri')]",
     "vhdContainer": "[parameters('vhdContainer')]"
