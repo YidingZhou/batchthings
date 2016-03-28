@@ -255,7 +255,7 @@
       "properties": {
         "publisher": "Microsoft.Compute",
         "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.2",
+        "typeHandlerVersion": "1.4",
         "settings": {
           "commandToExecute": "[variables('clientInstallationCLI')]"
         }
@@ -335,7 +335,7 @@
       "properties": {
         "publisher": "Microsoft.Compute",
         "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.2",
+        "typeHandlerVersion": "1.4",
         "settings": {
           "commandToExecute": "[concat(variables('installationCLI'), ' ', parameters('dnsName'), ' ', parameters('location'), ' master')]"
         }
@@ -427,7 +427,7 @@
       "properties": {
         "publisher": "Microsoft.Compute",
         "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.2",
+        "typeHandlerVersion": "1.4",
         "settings": {
           "commandToExecute": "[concat(variables('installationCLI'), ' ', parameters('dnsName'), ' ', parameters('location'))]"
         }
