@@ -337,9 +337,6 @@
         "type": "CustomScriptExtension",
         "typeHandlerVersion": "1.2",
         "settings": {
-          "fileUris": [
-            "[variables('scriptName')]"
-          ],
           "commandToExecute": "[concat(variables('installationCLI'), ' ', parameters('dnsName'), ' ', parameters('location'), ' master')]"
         }
       }
@@ -432,9 +429,6 @@
         "type": "CustomScriptExtension",
         "typeHandlerVersion": "1.2",
         "settings": {
-          "fileUris": [
-            "[variables('scriptName')]"
-          ],
           "commandToExecute": "[concat(variables('installationCLI'), ' ', parameters('dnsName'), ' ', parameters('location'))]"
         }
       }
