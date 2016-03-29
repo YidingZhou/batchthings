@@ -106,7 +106,7 @@
     "scriptName": "[concat(parameters('scriptUri'), 'private_worker_vm_setup.ps1')]",
     "clientScriptName": "[concat(parameters('scriptUri'), 'private_client_vm_setup.ps1')]",
     "installationCLI": "echo hello world",
-    "clientInstallationCLI": "powershell -command 'echo hello world' > c:\\windows\\temp\\output.log",
+    "clientInstallationCLI": "powershell -command echo hello world > c:\\windows\\temp\\output.log",
     "networkSecurityGroupName": "NSGMJS",
     "imageUri": "[parameters('imageUri')]",
     "vhdContainer": "[parameters('vhdContainer')]"
