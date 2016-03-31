@@ -104,9 +104,9 @@
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('networkSettings').subnet.dse.name)]",
     "sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
     "scriptName": "http://mdcssetup.blob.core.windows.net/scripts/mdcssetup_custom_private_ip.ps1",
-    "clientScriptName": "http://mdcssetup.blob.core.windows.net/scripts/mdcssetup_custom_private_ip_client.ps1",
+    "blobclientScriptName": "http://mdcssetup.blob.core.windows.net/scripts/mdcssetup_custom_private_ip_client.ps1",
     "origscriptName": "[concat(parameters('scriptUri'), 'private_worker_vm_setup.ps1')]",
-    "origclientScriptName": "[concat(parameters('scriptUri'), 'private_client_vm_setup.ps1')]",
+    "clientScriptName": "[concat(parameters('scriptUri'), 'private_client_vm_setup.ps1')]",
     "installationCLI": "powershell -ExecutionPolicy Unrestricted -file mdcssetup_custom_private_ip.ps1 shim > ./output.log",
     "clientInstallationCLI": "tree > ./output.log",
     "originstallationCLI": "powershell -ExecutionPolicy Unrestricted -file private_worker_vm_setup.ps1 shim",
@@ -259,6 +259,9 @@
         "type": "CustomScriptExtension",
         "typeHandlerVersion": "1.4",
         "settings": {
+          "fileUris": [
+            "[variables('clientScriptName')]"
+          ],
           "commandToExecute": "[variables('clientInstallationCLI')]"
         }
       }
@@ -339,6 +342,9 @@
         "type": "CustomScriptExtension",
         "typeHandlerVersion": "1.4",
         "settings": {
+          "fileUris": [
+            "[variables('scriptName')]"
+          ],
           "commandToExecute": "[concat(variables('installationCLI'), ' ', parameters('dnsName'), ' ', parameters('location'), ' master')]"
         }
       }
@@ -431,6 +437,9 @@
         "type": "CustomScriptExtension",
         "typeHandlerVersion": "1.4",
         "settings": {
+          "fileUris": [
+            "[variables('scriptName')]"
+          ],
           "commandToExecute": "[concat(variables('installationCLI'), ' ', parameters('dnsName'), ' ', parameters('location'))]"
         }
       }
