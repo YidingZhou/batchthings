@@ -38,7 +38,7 @@ function FindMatlabRoot() {
     $computername = $env:computername
     $MatlabKey="SOFTWARE\\MathWorks\\MATLAB"
     $reg=[microsoft.win32.registrykey]::OpenRemoteBaseKey('LocalMachine',$computername) 
-    $regkey=$reg.OpenSubKey($UninstallKey) 
+    $regkey=$reg.OpenSubKey($MatlabKey) 
     $subkeys=$regkey.GetSubKeyNames() 
     $matlabroot = ""
     foreach($key in $subkeys){
