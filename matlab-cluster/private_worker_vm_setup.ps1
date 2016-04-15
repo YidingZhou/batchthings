@@ -34,6 +34,24 @@ function GenPass($textToHash) {
   return "!" + $res.substring(0,12) + "$";
 }
 
+function FindMatlabRoot() {
+    $computername = $env:computername
+    $MatlabKey="SOFTWARE\\MathWorks\\MATLAB"
+    $reg=[microsoft.win32.registrykey]::OpenRemoteBaseKey('LocalMachine',$computername) 
+    $regkey=$reg.OpenSubKey($UninstallKey) 
+    $subkeys=$regkey.GetSubKeyNames() 
+    $matlabroot = ""
+    foreach($key in $subkeys){
+        $thisKey=$MatlabKey + "\\" + $key 
+        $thisSubKey=$reg.OpenSubKey($thisKey)
+        $thisroot = $thisSubKey.GetValue("MATLABROOT")
+        if($matlabroot -lt $thisroot) {
+            $matlabroot = $thisroot
+        }
+    } 
+    return $matlabroot
+}
+
 function main($p) {
 
 whoami | trace
@@ -66,7 +84,8 @@ whoami | trace
 #start-process -FilePath $mdcs_folder\MDCS\setup.exe -ArgumentList "-inputfile",$installconfig -nonewwindow -wait
 
 # Step 4. Update mdce_def for hosted license and hostname suffix
-$mdcsdir = "C:\Program Files\MATLAB\R2015aSP1\toolbox\distcomp\bin"
+$matlabroot = FindMatlabRoot()
+$mdcsdir = $matlabroot + "\toolbox\distcomp\bin"
 
 echo "config mdce_def" | trace
 $configfile = $mdcsdir + "\mdce_def.bat"
