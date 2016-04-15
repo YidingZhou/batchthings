@@ -84,7 +84,7 @@ whoami | trace
 #start-process -FilePath $mdcs_folder\MDCS\setup.exe -ArgumentList "-inputfile",$installconfig -nonewwindow -wait
 
 # Step 4. Update mdce_def for hosted license and hostname suffix
-$matlabroot = FindMatlabRoot()
+$matlabroot = FindMatlabRoot
 $mdcsdir = $matlabroot + "\toolbox\distcomp\bin"
 
 echo "config mdce_def" | trace
