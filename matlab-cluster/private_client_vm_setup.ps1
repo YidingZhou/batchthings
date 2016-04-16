@@ -19,6 +19,24 @@ function trace() {
     $log | timestamp | Out-File -Confirm:$false -FilePath $script:logfile -Append
 }
 
+function FindMatlabRoot() {
+    $computername = $env:computername
+    $MatlabKey="SOFTWARE\\MathWorks\\MATLAB"
+    $reg=[microsoft.win32.registrykey]::OpenRemoteBaseKey('LocalMachine',$computername) 
+    $regkey=$reg.OpenSubKey($MatlabKey) 
+    $subkeys=$regkey.GetSubKeyNames() 
+    $matlabroot = ""
+    foreach($key in $subkeys){
+        $thisKey=$MatlabKey + "\\" + $key 
+        $thisSubKey=$reg.OpenSubKey($thisKey)
+        $thisroot = $thisSubKey.GetValue("MATLABROOT")
+        if($matlabroot -lt $thisroot) {
+            $matlabroot = $thisroot
+        }
+    } 
+    return $matlabroot
+}
+
 echo "client start" | trace
 $MyInvocation | Out-String | trace
 
@@ -38,7 +56,8 @@ $myString = @"
 $myString | Out-File -Encoding ascii "C:\Program Files\MATLAB\R2015aSP1\licenses\license_info.xml"
 
 #create shortcut
-$TargetFile = "C:\Program Files\MATLAB\R2015aSP1\bin\matlab.exe"
+$matlabroot = FindMatlabRoot
+$TargetFile = $matlabroot + "\bin\matlab.exe"
 $ShortcutFile = "C:\Users\Public\Desktop\MATLAB.lnk"
 $WScriptShell = New-Object -ComObject WScript.Shell
 $Shortcut = $WScriptShell.CreateShortcut($ShortcutFile)

@@ -34,6 +34,24 @@ function GenPass($textToHash) {
   return "!" + $res.substring(0,12) + "$";
 }
 
+function FindMatlabRoot() {
+    $computername = $env:computername
+    $MatlabKey="SOFTWARE\\MathWorks\\MATLAB"
+    $reg=[microsoft.win32.registrykey]::OpenRemoteBaseKey('LocalMachine',$computername) 
+    $regkey=$reg.OpenSubKey($MatlabKey) 
+    $subkeys=$regkey.GetSubKeyNames() 
+    $matlabroot = ""
+    foreach($key in $subkeys){
+        $thisKey=$MatlabKey + "\\" + $key 
+        $thisSubKey=$reg.OpenSubKey($thisKey)
+        $thisroot = $thisSubKey.GetValue("MATLABROOT")
+        if($matlabroot -lt $thisroot) {
+            $matlabroot = $thisroot
+        }
+    } 
+    return $matlabroot
+}
+
 function main($p) {
 
 whoami | trace
@@ -66,31 +84,20 @@ whoami | trace
 #start-process -FilePath $mdcs_folder\MDCS\setup.exe -ArgumentList "-inputfile",$installconfig -nonewwindow -wait
 
 # Step 4. Update mdce_def for hosted license and hostname suffix
-$mdcsdir = "C:\Program Files\MATLAB\R2015aSP1\toolbox\distcomp\bin"
+$matlabroot = FindMatlabRoot
+$mdcsdir = $matlabroot + "\toolbox\distcomp\bin"
 
 echo "config mdce_def" | trace
 $configfile = $mdcsdir + "\mdce_def.bat"
 # internal DNS name
 $dnssuffix = (Get-WmiObject Win32_NetworkAdapterConfiguration -ComputerName $env:COMPUTERNAME | ? {$_.IPEnabled} | ?{$_.DNSDomain -ne $null}).DNSDomain
-if($p.Count -gt 3) {
-  # Use public DNS name for master
-  $hostfqdn = $p[1] + '.' + $p[2] + '.' + 'cloudapp.azure.com'
-  $masterfqdn = $hostfqdn
-} else { # workers
-  $hostfqdn = $p[1] + '-' + $env:COMPUTERNAME + '.' + $p[2] + '.' + 'cloudapp.azure.com'
-  $masterfqdn = $p[1] + '.' + $p[2] + '.' + 'cloudapp.azure.com'
-}
 
-# Make sure the DNS name can be resolved on all nodes
-while(($t -lt 360) -and ($True -ne (Resolve-Dnsname $hostfqdn ))) {
-  echo "keep contacting master" | trace
-  Start-Sleep 10
-  ipconfig /flushdns
-  $t++
-};
+# the coupled configuration doesn't assign public ip to master or worker, everything goes through private ip
+$masterfqdn = "master.$dnssuffix"
+$hostfqdn = $env:COMPUTERNAME + '.' + $dnssuffix
 
 # Make sure the private DNS name of the master can be resolved on all nodes
-while(($t -lt 360) -and ($True -ne (Resolve-Dnsname "master.$dnssuffix" ))) {
+while(($t -lt 360) -and ($True -ne (Resolve-Dnsname $masterfqdn))) {
   echo "keep contacting master" | trace
   Start-Sleep 10
   ipconfig /flushdns
